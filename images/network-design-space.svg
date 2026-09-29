@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="820" viewBox="0 0 1440 820" role="img" aria-labelledby="title desc">
+  <title id="title">Leaf-Spine 网络中的 Buffer 相关设计空间</title>
+  <desc id="desc">图中从 Sender 经过 Source Leaf 和 Spine 到 Destination Leaf 及接收端，并标出端侧拥塞控制、丢包恢复、负载均衡、逐跳流控、交换机 Buffer 管理、ECN 和调度所在的位置。</desc>
+  <defs>
+    <marker id="dataArrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#2878d0"/>
+    </marker>
+    <marker id="feedbackArrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#df7a28"/>
+    </marker>
+    <marker id="calloutArrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 Z" fill="#6e7f91"/>
+    </marker>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#16324f" flood-opacity="0.14"/>
+    </filter>
+    <style>
+      .bg { fill: #fbfcfe; }
+      .zone { fill: #f2f6fa; stroke: #d5dee8; stroke-width: 1.5; }
+      .zone-title { font: 600 17px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif; fill: #5b6b7b; letter-spacing: .5px; }
+      .node { fill: #ffffff; stroke: #557086; stroke-width: 2; filter: url(#softShadow); }
+      .switch { fill: #eaf3fb; stroke: #3977a8; stroke-width: 2.2; filter: url(#softShadow); }
+      .hotspot { fill: #fff0eb; stroke: #d35c42; stroke-width: 3; filter: url(#softShadow); }
+      .node-title { font: 650 18px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif; fill: #17324d; text-anchor: middle; }
+      .node-sub { font: 14px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif; fill: #617385; text-anchor: middle; }
+      .data { fill: none; stroke: #2878d0; stroke-width: 3; marker-end: url(#dataArrow); }
+      .data-hot { fill: none; stroke: #2878d0; stroke-width: 5; marker-end: url(#dataArrow); }
+      .feedback { fill: none; stroke: #df7a28; stroke-width: 2.5; stroke-dasharray: 9 6; marker-end: url(#feedbackArrow); }
+      .flow-control { fill: none; stroke: #2d9b70; stroke-width: 2.2; stroke-dasharray: 4 5; }
+      .edge-label { font: 14px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif; fill: #40566b; text-anchor: middle; }
+      .callout { fill: #ffffff; stroke: #b8c6d3; stroke-width: 1.5; filter: url(#softShadow); }
+      .callout-title { font: 650 18px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif; fill: #17324d; }
+      .callout-text { font: 15px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif; fill: #40566b; }
+      .callout-line { fill: none; stroke: #6e7f91; stroke-width: 1.7; stroke-dasharray: 5 4; marker-end: url(#calloutArrow); }
+      .queue { fill: #f6a58f; stroke: #cc5e45; stroke-width: 1; }
+      .legend { font: 14px -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif; fill: #40566b; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1440" height="820"/>
+
+  <rect class="zone" x="28" y="190" width="240" height="390" rx="18"/>
+  <rect class="zone" x="286" y="190" width="240" height="390" rx="18"/>
+  <rect class="zone" x="548" y="190" width="300" height="390" rx="18"/>
+  <rect class="zone" x="870" y="190" width="270" height="390" rx="18"/>
+  <rect class="zone" x="1162" y="190" width="250" height="390" rx="18"/>
+
+  <text class="zone-title" x="148" y="218" text-anchor="middle">SENDER</text>
+  <text class="zone-title" x="406" y="218" text-anchor="middle">SOURCE LEAF</text>
+  <text class="zone-title" x="698" y="218" text-anchor="middle">SPINE / FABRIC</text>
+  <text class="zone-title" x="1005" y="218" text-anchor="middle">DESTINATION LEAF</text>
+  <text class="zone-title" x="1287" y="218" text-anchor="middle">RECEIVER</text>
+
+  <rect class="node" x="67" y="258" width="162" height="65" rx="10"/>
+  <rect class="node" x="67" y="354" width="162" height="65" rx="10"/>
+  <rect class="node" x="67" y="450" width="162" height="65" rx="10"/>
+  <text class="node-title" x="148" y="286">Sender 1</text>
+  <text class="node-sub" x="148" y="307">App / NIC</text>
+  <text class="node-title" x="148" y="382">Sender 2</text>
+  <text class="node-sub" x="148" y="403">App / NIC</text>
+  <text class="node-title" x="148" y="478">Sender N</text>
+  <text class="node-sub" x="148" y="499">App / NIC</text>
+
+  <rect class="switch" x="325" y="280" width="162" height="82" rx="12"/>
+  <rect class="switch" x="325" y="428" width="162" height="82" rx="12"/>
+  <text class="node-title" x="406" y="313">Leaf 1</text>
+  <text class="node-sub" x="406" y="337">Ingress / Egress queues</text>
+  <text class="node-title" x="406" y="461">Leaf 2</text>
+  <text class="node-sub" x="406" y="485">Ingress / Egress queues</text>
+
+  <rect class="switch" x="612" y="266" width="172" height="82" rx="12"/>
+  <rect class="switch" x="612" y="452" width="172" height="82" rx="12"/>
+  <text class="node-title" x="698" y="299">Spine 1</text>
+  <text class="node-sub" x="698" y="323">Path capacity</text>
+  <text class="node-title" x="698" y="485">Spine 2</text>
+  <text class="node-sub" x="698" y="509">Path capacity</text>
+
+  <rect class="hotspot" x="910" y="338" width="190" height="110" rx="14"/>
+  <text class="node-title" x="1005" y="368">Destination Leaf</text>
+  <text class="node-sub" x="1005" y="390">Receiver-side Incast</text>
+  <rect class="queue" x="945" y="410" width="22" height="20" rx="2"/>
+  <rect class="queue" x="971" y="410" width="22" height="20" rx="2"/>
+  <rect class="queue" x="997" y="410" width="22" height="20" rx="2"/>
+  <rect class="queue" x="1023" y="410" width="22" height="20" rx="2"/>
+  <rect class="queue" x="1049" y="410" width="16" height="20" rx="2"/>
+
+  <rect class="node" x="1205" y="360" width="164" height="68" rx="10"/>
+  <text class="node-title" x="1287" y="389">Receiver</text>
+  <text class="node-sub" x="1287" y="411">Single bottleneck link</text>
+
+  <path class="data" d="M229 290 L325 313"/>
+  <path class="data" d="M229 386 L325 334"/>
+  <path class="data" d="M229 482 L325 469"/>
+  <path class="data" d="M487 311 L612 307"/>
+  <path class="data" d="M487 339 L612 486"/>
+  <path class="data" d="M487 457 L612 322"/>
+  <path class="data" d="M487 481 L612 493"/>
+  <path class="data-hot" d="M784 307 L910 369"/>
+  <path class="data-hot" d="M784 493 L910 418"/>
+  <path class="data-hot" d="M1100 393 L1205 393"/>
+
+  <path class="feedback" d="M1205 540 C900 635 420 635 112 550"/>
+  <text class="edge-label" x="665" y="649">End-to-end congestion / loss feedback：ECN echo、ACK、CNP、Drop</text>
+
+  <path class="flow-control" d="M230 548 L1098 548"/>
+  <line x1="326" y1="540" x2="326" y2="556" stroke="#2d9b70" stroke-width="2"/>
+  <line x1="527" y1="540" x2="527" y2="556" stroke="#2d9b70" stroke-width="2"/>
+  <line x1="849" y1="540" x2="849" y2="556" stroke="#2d9b70" stroke-width="2"/>
+  <line x1="1099" y1="540" x2="1099" y2="556" stroke="#2d9b70" stroke-width="2"/>
+  <text class="edge-label" x="665" y="574">Hop-by-hop flow control：PFC / Credit；改变积压的位置，不一定减少全网积压</text>
+
+  <rect class="callout" x="34" y="28" width="280" height="132" rx="12"/>
+  <text class="callout-title" x="56" y="58">Sender</text>
+  <text class="callout-text" x="56" y="86">• Traffic generation / Pacing</text>
+  <text class="callout-text" x="56" y="112">• Congestion Control</text>
+  <text class="callout-text" x="56" y="138">• Loss detection &amp; recovery</text>
+  <path class="callout-line" d="M175 160 L160 255"/>
+
+  <rect class="callout" x="335" y="28" width="300" height="132" rx="12"/>
+  <text class="callout-title" x="357" y="58">Source Leaf</text>
+  <text class="callout-text" x="357" y="86">• ECN/RED、Buffer management</text>
+  <text class="callout-text" x="357" y="112">• Queue scheduling</text>
+  <text class="callout-text" x="357" y="138">• Path selection / Load balancing</text>
+  <path class="callout-line" d="M465 160 L426 278"/>
+
+  <rect class="callout" x="660" y="28" width="300" height="132" rx="12"/>
+  <text class="callout-title" x="682" y="58">Spine / Fabric</text>
+  <text class="callout-text" x="682" y="86">• 多路径提供可用带宽</text>
+  <text class="callout-text" x="682" y="112">• LB 决定热点落在哪条路径</text>
+  <text class="callout-text" x="682" y="138">• 自身也有 Queue、ECN 和调度</text>
+  <path class="callout-line" d="M788 160 L716 265"/>
+
+  <rect class="callout" x="985" y="28" width="420" height="132" rx="12"/>
+  <text class="callout-title" x="1007" y="58">Destination Leaf / Receiver</text>
+  <text class="callout-text" x="1007" y="86">• Incast 最终汇聚到接收端出口</text>
+  <text class="callout-text" x="1007" y="112">• Buffer 决定 Burst 能否被直接接住</text>
+  <text class="callout-text" x="1007" y="138">• ECN、Scheduling、Recovery 决定后续行为</text>
+  <path class="callout-line" d="M1120 160 L1032 335"/>
+
+  <line x1="950" y1="690" x2="1010" y2="690" class="data"/>
+  <text class="legend" x="1022" y="695">Data path</text>
+  <line x1="950" y1="724" x2="1010" y2="724" class="feedback"/>
+  <text class="legend" x="1022" y="729">End-to-end feedback</text>
+  <line x1="950" y1="758" x2="1010" y2="758" class="flow-control"/>
+  <text class="legend" x="1022" y="763">Hop-by-hop flow control</text>
+
+  <rect x="36" y="688" width="820" height="90" rx="12" fill="#f7fafc" stroke="#d5dee8"/>
+  <text class="callout-title" x="58" y="718">从这张图看设计空间</text>
+  <text class="callout-text" x="58" y="745">Sender 控制“发多少、何时发”；Load balancing 控制“走哪条路”；交换机机制控制“排在哪里、谁先走”；</text>
+  <text class="callout-text" x="58" y="769">Buffer 只负责接住暂时发不走的数据。项目要看的是：Buffer 变大后，前面这些机制中哪些可以放松，哪些仍然不能少。</text>
+</svg>
