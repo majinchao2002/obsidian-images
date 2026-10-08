@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="780" viewBox="0 0 1500 780" role="img" aria-labelledby="title desc">
+  <title id="title">不同 fan-in 与距离下的缓存占用对比</title>
+  <desc id="desc">对比原 Credit 返回与串行缓存融合加动态 Credit 返回的缓存占用和丢包情况。</desc>
+  <style>
+    text { font-family: Arial, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #1f2937; }
+    .title { font-size: 30px; font-weight: 700; }
+    .sub { font-size: 16px; fill: #64748b; }
+    .hdr { font-size: 18px; font-weight: 700; }
+    .fan { font-size: 20px; font-weight: 700; }
+    .base { font-size: 16px; fill: #475569; }
+    .opt { font-size: 17px; font-weight: 700; fill: #1d4ed8; }
+    .loss { font-size: 14px; font-weight: 700; fill: #b91c1c; }
+    .ok { font-size: 14px; font-weight: 700; fill: #047857; }
+  </style>
+  <rect width="1500" height="780" fill="#ffffff"/>
+  <text x="45" y="52" class="title">多打一：动态 Credit 将缓存占用压低并避免溢出</text>
+  <text x="45" y="84" class="sub">0.5 RTT 更新；单元格为“原方案占用 → α=0.05 稳态占用”，单位 MB</text>
+
+  <rect x="45" y="112" width="24" height="16" rx="3" fill="#fee2e2" stroke="#ef4444"/>
+  <text x="80" y="126" class="sub">原方案丢包</text>
+  <rect x="220" y="112" width="24" height="16" rx="3" fill="#ecfdf5" stroke="#10b981"/>
+  <text x="255" y="126" class="sub">原方案不丢包</text>
+  <text x="485" y="126" class="sub">蓝色数字为动态 Credit 稳态占用；所有组合均不丢包并进入稳态</text>
+
+  <rect x="45" y="160" width="1410" height="530" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+  <rect x="45" y="160" width="250" height="80" fill="#e2e8f0"/>
+  <rect x="295" y="160" width="386" height="80" fill="#dbeafe"/>
+  <rect x="681" y="160" width="386" height="80" fill="#dbeafe"/>
+  <rect x="1067" y="160" width="388" height="80" fill="#dbeafe"/>
+  <text x="170" y="208" text-anchor="middle" class="hdr">Fan-in</text>
+  <text x="488" y="200" text-anchor="middle" class="hdr">1700 m</text><text x="488" y="225" text-anchor="middle" class="sub">约 1 BDP = 49 MB</text>
+  <text x="874" y="200" text-anchor="middle" class="hdr">2000 m</text><text x="874" y="225" text-anchor="middle" class="sub">约 1 BDP = 58 MB</text>
+  <text x="1261" y="200" text-anchor="middle" class="hdr">3400 m</text><text x="1261" y="225" text-anchor="middle" class="sub">约 1 BDP = 99 MB</text>
+
+  <!-- row backgrounds -->
+  <rect x="45" y="240" width="250" height="112" fill="#ffffff"/><rect x="295" y="240" width="386" height="112" fill="#ecfdf5"/><rect x="681" y="240" width="386" height="112" fill="#ecfdf5"/><rect x="1067" y="240" width="388" height="112" fill="#ecfdf5"/>
+  <rect x="45" y="352" width="250" height="112" fill="#ffffff"/><rect x="295" y="352" width="386" height="112" fill="#ecfdf5"/><rect x="681" y="352" width="386" height="112" fill="#fee2e2"/><rect x="1067" y="352" width="388" height="112" fill="#fee2e2"/>
+  <rect x="45" y="464" width="250" height="112" fill="#ffffff"/><rect x="295" y="464" width="386" height="112" fill="#ecfdf5"/><rect x="681" y="464" width="386" height="112" fill="#fee2e2"/><rect x="1067" y="464" width="388" height="112" fill="#fee2e2"/>
+  <rect x="45" y="576" width="250" height="114" fill="#ffffff"/><rect x="295" y="576" width="386" height="114" fill="#ecfdf5"/><rect x="681" y="576" width="386" height="114" fill="#fee2e2"/><rect x="1067" y="576" width="388" height="114" fill="#fee2e2"/>
+
+  <!-- grid -->
+  <g stroke="#cbd5e1" stroke-width="2"><line x1="295" y1="160" x2="295" y2="690"/><line x1="681" y1="160" x2="681" y2="690"/><line x1="1067" y1="160" x2="1067" y2="690"/><line x1="45" y1="240" x2="1455" y2="240"/><line x1="45" y1="352" x2="1455" y2="352"/><line x1="45" y1="464" x2="1455" y2="464"/><line x1="45" y1="576" x2="1455" y2="576"/></g>
+
+  <text x="170" y="305" text-anchor="middle" class="fan">64-to-1</text>
+  <text x="170" y="417" text-anchor="middle" class="fan">128-to-1</text>
+  <text x="170" y="529" text-anchor="middle" class="fan">256-to-1</text>
+  <text x="170" y="641" text-anchor="middle" class="fan">512-to-1</text>
+
+  <!-- values row 1 -->
+  <text x="488" y="282" text-anchor="middle" class="base">49.2 →</text><text x="548" y="282" class="opt">24.7</text><text x="488" y="318" text-anchor="middle" class="ok">不丢包</text>
+  <text x="874" y="282" text-anchor="middle" class="base">57.9 →</text><text x="934" y="282" class="opt">28.9</text><text x="874" y="318" text-anchor="middle" class="ok">不丢包</text>
+  <text x="1261" y="282" text-anchor="middle" class="base">98.6 →</text><text x="1322" y="282" class="opt">49.2</text><text x="1261" y="318" text-anchor="middle" class="ok">不丢包</text>
+  <!-- row 2 -->
+  <text x="488" y="394" text-anchor="middle" class="base">98.4 →</text><text x="548" y="394" class="opt">49.7</text><text x="488" y="430" text-anchor="middle" class="ok">不丢包</text>
+  <text x="874" y="394" text-anchor="middle" class="base">105.6 →</text><text x="942" y="394" class="opt">58.3</text><text x="874" y="430" text-anchor="middle" class="loss">原方案丢包</text>
+  <text x="1261" y="394" text-anchor="middle" class="base">105.6 →</text><text x="1329" y="394" class="opt">99.4</text><text x="1261" y="430" text-anchor="middle" class="loss">原方案丢包</text>
+  <!-- row 3 -->
+  <text x="488" y="506" text-anchor="middle" class="base">98.8 →</text><text x="548" y="506" class="opt">49.6</text><text x="488" y="542" text-anchor="middle" class="ok">不丢包</text>
+  <text x="874" y="506" text-anchor="middle" class="base">105.6 →</text><text x="942" y="506" class="opt">58.1</text><text x="874" y="542" text-anchor="middle" class="loss">原方案丢包</text>
+  <text x="1261" y="506" text-anchor="middle" class="base">105.6 →</text><text x="1329" y="506" class="opt">99.7</text><text x="1261" y="542" text-anchor="middle" class="loss">原方案丢包</text>
+  <!-- row 4 -->
+  <text x="488" y="618" text-anchor="middle" class="base">99.8 →</text><text x="548" y="618" class="opt">49.8</text><text x="488" y="654" text-anchor="middle" class="ok">不丢包</text>
+  <text x="874" y="618" text-anchor="middle" class="base">105.6 →</text><text x="942" y="618" class="opt">58.5</text><text x="874" y="654" text-anchor="middle" class="loss">原方案丢包</text>
+  <text x="1261" y="618" text-anchor="middle" class="base">105.6 →</text><text x="1329" y="618" class="opt">99.5</text><text x="1261" y="654" text-anchor="middle" class="loss">原方案丢包</text>
+
+  <text x="45" y="735" class="sub">数据来源：多打1实验8.19.pptx，第 5 页；动态方案列取 α=0.05。</text>
+</svg>
